@@ -1,0 +1,515 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script type="text/javascript" src="~/lib/jquery/dist/jquery.js"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/jquery-ui.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/modal.css" />
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>tinymce.init({selector:'textarea.tinymce'});</script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery-1.12.4.js"></script>
+    <script src="~/lib/jquery/dist/jquery-ui.js"></script>
+    <script src="~/cleditor/tinymce.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        @* <div class="col-md-12"> *@
+            <div class="row" style="padding: 20px;">
+                <div class="col-lg-5">
+                <h3> <span class="badge badge-success">PAID</span> Bill</h3>
+                <ul class="list-group">
+                    <li class="list-group-item" style="font-size:12px">Please find attached your invoice. Thank your for timely payment.</li>
+                </ul>
+                </div>
+                <div class="col-lg"></div>
+                <div class="col-lg-3">
+                    <img height="60px" id="imgheader" style="resize:both;" src="@Model.Data.ListOfCustomer[0].LogoURL" />
+                </div>
+            </div>
+            <div class="row" style="padding: 20px;">
+                <div class="col-lg-2">
+                <label>Invoice No.</label>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">#</span>
+                    </div>
+                    <input type="text" class="form-control" style="background-color:white;" placeholder="INV-@Model.Number" readonly aria-describedby="basic-addon1">
+                </div>
+                </div>
+                <div class="col-lg"></div>
+                <div class="col-lg-3" style="display:inline-block;margin-right:20px;">
+                    <label>Language</label>
+                    <select id="language" class="form-control" asp-items="@(new SelectList(Model.Data.ListOfLanguage,"Name","Code"))"></select>
+                </div>
+                <div class="col-lg-3" style="display:inline-block;margin-right:20px;">
+                    <label>Currency</label>
+                    <select onchange="CurrencyChange()" id="currency" class="form-control" action="" asp-items="@(new SelectList(Model.Data.ListOfCurrency,"Code","Name"))"></select>
+                </div>
+            </div>
+            <hr>
+            @* <div style="font-size: 40%; font-family: Helvetica; font-weight: 400; margin-top: 5%; margin-bottom: 3%; border-top: outset;">
+            </div> *@
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            <label for="from">From</label>
+                            <textarea class="form-control" id="from" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-lg-4"></div>
+                    <div class="col-lg-3">
+                        <div class="form-group" style="display:inline-block;margin-right:20px;">
+                            <label for="duedate">Date</label>
+                            <input type="text" id="duedate" class="datepicker" onchange="DatepickChange()" />
+                             <label for="invoicedue">Invoice Due</label>
+                            <select disabled="disabled" id="invoicedue" asp-items="@(new SelectList(Model.ListOfInvDue,"ID","Desc"))"></select>
+                        </div>
+                        <div class="form-group" style="display:inline-block;margin-right:20px;">
+                           
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            <label for="customer">To</label>
+                            <select style="width:50%;" onchange="CustomerChange()" id="customer" class="form-control" asp-items="@(new SelectList(Model.Data.ListOfCustomer,"ID","Name"))"></select>
+                            <textarea class="form-control" value="@Model.Data.ListOfCustomer[0].Address" rows="3" id="alamatto" contenteditable="false" disabled="disabled"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-lg-4"></div>
+                    <div class="col-lg-3" style="display:inline-block;margin-right:20px;" >
+                        <label for="PurchaseNo">Purchase Order No</label>
+                        <input type="text" id="PurchaseNo" />
+                    </div>
+                </div>
+            </div>
+
+            @* <hr> *@
+
+            @* <div style="font-size: 40%; font-family: Helvetica; font-weight: 400; margin-top: 5%; margin-bottom: 3%; border-top: outset;">
+            </div> *@
+
+            <table class=table id="tabeldetail">
+                <thead>
+                    <tr>
+                        <td scope="col-6" style="text-align:left; width:40%;">Name</td>
+                        <td scope="col-2" style="text-align:right; width:20%;">Quantity</td>
+                        <td scope="col-2" style="text-align:right; width:20%;">Rate</td>
+                        <td scope="col-2" style="text-align:right; width:20%;">Amount</td>
+                    </tr>
+                </thead>
+                <hr>
+                <tbody>
+                    <tr>
+                        <td rowspan="2" style="vertical-align:top;">
+                            <textarea class="tinymce" style="width:100%;" rows="4" cols="4" id="detail"></textarea>
+                        </td>
+                        <td>
+                            <input style="width:100%;text-align:right;" type="text" onkeypress="return isNumberKey(event)" id="qty" value="0.00" onkeyup="QtyRateChange(0)" />
+                        </td>
+                        <td>
+                            <input style="width:100%;text-align:right;" type="text" onkeypress="return isNumberKey(event)" id="rate" value="0.00" onkeyup="QtyRateChange(0)" />
+                            <select style="width:100%;" id="uom" class="form-control" asp-items="@(new SelectList(Model.Data.ListOfUOM,"ID","Code"))"></select>
+                        </td>
+                        <td>
+                            <input style="width:30%;text-align:left;" type="text" disabled="disabled" id="curr" value="USD" /><input style="width:70%;text-align:right;" disabled="disabled" type="text" id="amount" class="amountclass" value="0.00" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr>
+
+            <div class="container">
+                <div class="row">
+                    <div class="col-6" style="display: block;" >
+                        <input class="btn btn-primary" type="button" id="add" value="New Line" />
+                    </div>
+                    <div class="col-6" style="display: block; text-align:right;" >
+                        <input value="SubTotal" style="border:none;" type="text" disabled="disabled" />
+                        <input value="0.00" style="text-align:right;border:none;" type="text" disabled="disabled" id="subtotal" />
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-6" style="display: block; text-align:right;" >
+                       <input class="btn btn-outline-danger rounded-circle" type="button" id="clear" value="x" onclick="ClearDiscount()" />
+                    </div>
+                    <div class="col-6" style="display: block; text-align:right;" >
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="validationDefaultUsername" placeholder="Discount" aria-describedby="inputGroupPrepend2" required>
+                            <input value="0" style="width:10%;text-align:right;" type="text" id="DiscountValue" onkeyup="DiscountValueChange()" />
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="inputGroupPrepend2">%</span>
+                            </div>
+                            <input value="0.00" style="text-align:right;border:none;" type="text" disabled="disabled" id="DiscountAmount" />                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-6" style="display: block;" >
+                    </div>
+                    <div class="col-6" style="display: block; text-align:right;" >
+                        <input value="Total USD" style="border:none;" type="text" disabled="disabled" id="totaltext" />
+                        <input value="0.00" style="text-align:right;border:none;" type="text" disabled="disabled" id="grandtotal" />
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-6" style="display: block;" >
+                    </div>
+                    <div class="col-6" style="display: block; text-align:right;" >
+                        <input class="btn btn-primary" type="button" id="save" value="Submit" />
+                    </div>
+                </div>
+            </div>
+    </div>
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close" onclick="modalClose()">&times;</span>
+            <p id="message"></p>
+        </div>
+    </div>
+</body>
+</html>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.datepicker').on('click', function (e) {
+            e.preventDefault();
+            $(this).attr("autocomplete", "off");
+        });
+
+        document.getElementById("alamatto").value = "@Model.Data.ListOfCustomer[0].Address";
+        $('#duedate').datepicker({
+            dateFormat: 'yy-mm-dd',
+            minDate: 0,
+            changeMonth: true,
+            changeYear: true,
+            maxDate: '+30Y'
+        });
+
+        $(function () {
+            $('#save').click(function () {
+                var nomor = "@Model.Number";
+                if (nomor.length == 1) {
+                    nomor = "00" + nomor.toString();
+                }
+                else if (nomor.length == 2) {
+                    nomor = "0" + nomor.toString();
+                }
+                var detail = [];
+
+                var data = document.getElementById("tabeldetail");
+                for (var i = 0; i < data.rows.length; i++) {
+                    var nameqty;
+                    var namerate;
+                    var nameamount;
+                    var nameorder;
+                    var det;
+                    if (i == 1) {
+                        nameorder = "detail";
+                        nameqty = "qty";
+                        namerate = "rate";
+                        nameamount = "amount";
+                        det = {
+                            nameorder: document.getElementById(desc).value,
+                            qty: Number(document.getElementById(nameqty).value.replace(',', '')),
+                            rate: Number(document.getElementById(namerate).value.replace(',', '')),
+                            amount: Number(document.getElementById(nameamount).value.replace(',', ''))
+                        }
+                        detail.push(det);
+                    }
+                    else if (i % 2 == 1) {
+                        nameorder = "detail" + i.toString();
+                        nameqty = "qty" + i.toString();
+                        namerate = "rate" + i.toString();
+                        nameamount = "amount" + i.toString();
+                        det = {
+                            nameorder: document.getElementById(desc).value,
+                            qty: Number(document.getElementById(nameqty).value.replace(',', '')),
+                            rate: Number(document.getElementById(namerate).value.replace(',', '')),
+                            amount: Number(document.getElementById(nameamount).value.replace(',', ''))
+                        }
+                        detail.push(det);
+                    }
+                }
+                var formdata = {
+                    invno: "INV-" + nomor,
+                    language: document.getElementById("language").options[document.getElementById("language").selectedIndex].text,
+                    currency: document.getElementById("currency").value,
+                    from: document.getElementById("from").value,
+                    nameto: document.getElementById("customer").options[document.getElementById("customer").selectedIndex].text,
+                    addressto: document.getElementById("alamatto").value,
+                    duedate: document.getElementById("duedate").value,
+                    invdue: document.getElementById("invoicedue").options[document.getElementById("invoicedue").selectedIndex].text,
+                    prchno: document.getElementById("PurchaseNo").value,
+                    detail: detail,
+                    subtotal: Number(document.getElementById("subtotal").value.replace(',', '')),
+                    disc: Number(document.getElementById("DiscountAmount").value.replace(',', '')),
+                    grandtotal: Number(document.getElementById("total").value.replace(',', ''))
+                };
+                var message;
+                $.ajax({
+                    type: "POST",
+                    url: "https://localhost:41671/api/SaveInvoice",
+                    data: JSON.stringify(formdata),
+                    contenttype: "application/json",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    dataType: "json",
+                    encode: true,
+                    success: function (data) {
+                        //var response = JSON.parse(data);
+                        saveSuccess(data);
+                    }
+                });
+                //location.reload();
+            });
+        });
+
+        $(function () {
+            $('#add').click(function () {
+                var tableID = "tabeldetail";
+                var table = document.getElementById(tableID);
+                var rowCount = table.rows.length;
+
+                var row = table.insertRow(rowCount);
+                var cell1 = row.insertCell(0);
+                cell1.setAttribute("rowspan", "2");
+                cell1.style.verticalAlign = "top";
+                var element = document.createElement('textarea');
+                element.style.width = "100%";
+                element.setAttribute("rows", 2);
+                element.setAttribute("cols", 4);
+                element.id = "detail" + rowCount.toString();
+                cell1.appendChild(element);
+                var cell2 = row.insertCell(1);
+                var element1 = document.createElement('input');
+                element1.type = "text";
+                element1.style.width = "100%";
+                element1.style.textAlign = "right";
+                element1.setAttribute("onkeyup", "QtyRateChange(" + rowCount.toString() + ")");
+                element1.setAttribute("onkeypress", "return isNumberKey(event)");
+                element1.value = "0.00";
+                element1.id = "qty" + rowCount.toString();
+                cell2.appendChild(element1);
+                var cell3 = row.insertCell(2);
+                var element2 = document.createElement('input');
+                element2.type = "text";
+                element2.style.width = "100%";
+                element2.style.textAlign = "right";
+                element2.setAttribute("onkeyup", "QtyRateChange(" + rowCount.toString() + ")");
+                element2.setAttribute("onkeypress", "return isNumberKey(event)");
+                element2.value = "0.00";
+                element2.id = "rate" + rowCount.toString();
+                cell3.appendChild(element2);
+                var cell4 = row.insertCell(3);
+                var element3 = document.createElement('input');
+                element3.type = "text";
+                element3.style.width = "30%";
+                element3.style.textAlign = "left";
+                element3.disabled = "disabled";
+                element3.setAttribute("Addresslass", "currclass");
+                element3.value = document.getElementById("currency").value;
+                element3.id = "curr" + rowCount.toString();
+                var element4 = document.createElement('input');
+                element4.type = "text";
+                element4.style.width = "70%";
+                element4.style.textAlign = "right";
+                element4.value = "0.00";
+                element4.setAttribute("disabled", "disabled");
+                element4.setAttribute("class", "amountclass");
+                element4.id = "amount" + rowCount.toString();
+                cell4.appendChild(element3);
+                cell4.appendChild(element4);
+                ////<select style="width:100%;" id="uom" class="form-control" asp-items="@*@(new SelectList(Model.Data.ListOfUOM,"ID","Code"))">*@
+                rowCount = table.rows.length;
+                var row1 = table.insertRow(rowCount);
+                //row1.insertCell(0);
+                row1.insertCell(0);
+                var cell5 = row1.insertCell(1);
+                var element5 = document.createElement('select');
+                element5.style.width = "100%";
+                element5.class = "form-control";
+                var option;
+                var i = 0;
+            @foreach(var data in Model.Data.ListOfUOM)
+            {
+                <text>
+                option = document.createElement('option');
+                option.text = "@data.Code";
+                option.value = "@data.ID";
+                element5.add(option, i);
+                i++;
+                </text>
+            }
+                @*element5.aspitems="@(new SelectList(Model.Data.ListOfUOM,"ID","Code"))";*@
+                element5.id = "uom" + rowCount.toString();
+                cell5.appendChild(element5);
+                row1.insertCell(2);
+            });
+        });
+
+        $(function () {
+            $('#PurchaseNo').click(function () {
+                window.open('/PopUp', 'CustomerSearch', 'width=550,height=170,left=150,top=200,toolbar=1,status=1,');
+            });
+        });
+
+
+
+    });
+
+    function modalClose() {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "none";
+        location.reload();
+    }
+
+    function saveSuccess(data) {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "block";
+        var message = document.getElementById("message");
+        message.textContent = data.message;
+    }
+
+    function DatepickChange() {
+        var dates = new Date()
+        var date = dates.getDate();
+        var month = dates.getMonth() + 1;
+        var year = dates.getFullYear();
+        var today = new Date(year, month, date);
+        var pick = $('#duedate').val();
+        var pickdate = new Date(pick);
+        pickdate = new Date(pickdate.getFullYear(), pickdate.getMonth() + 1, pickdate.getDate());
+        if (pickdate > today) {
+            document.getElementById("invoicedue").value = "2";
+        }
+        else {
+            document.getElementById("invoicedue").value = "1";
+        }
+    }
+    function ClearDiscount() {
+        document.getElementById("DiscountName").value = "";
+        document.getElementById("DiscountValue").value = 0;
+        var subtotal = document.getElementById("subtotal").value.replace(',', '');
+        var rate = document.getElementById("DiscountValue").value;
+        var amount = rate * subtotal / 100;
+        document.getElementById("DiscountAmount").value = formatCurrency(amount);
+        document.getElementById("total").value = formatCurrency(subtotal - amount);
+    }
+    function DiscountValueChange() {
+        var subtotal = document.getElementById("subtotal").value.replace(',', '');
+        var rate = document.getElementById("DiscountValue").value;
+        var amount = rate * subtotal / 100;
+        document.getElementById("DiscountAmount").value = formatCurrency(amount);
+        document.getElementById("total").value = formatCurrency(subtotal - amount);
+    }
+
+    function QtyRateChange(x) {
+        var nameqty;
+        var namerate;
+        var nameamount;
+        if (x == 0) {
+            nameqty = "qty";
+            namerate = "rate";
+            nameamount = "amount";
+        }
+        else {
+            nameqty = "qty" + x.toString();
+            namerate = "rate" + x.toString();
+            nameamount = "amount" + x.toString();
+        }
+        var qty = document.getElementById(nameqty).value.replace(',', '');
+        if (qty.length - qty.indexOf('.') > 2) {
+            document.getElementById(nameqty).value = parseFloat(qty).toFixed(2);
+        }
+        document.getElementById(nameqty).value = formatCurrency(qty);
+        qty = parseFloat(qty).toFixed(2);
+
+        var rate = document.getElementById(namerate).value.replace(',', '');
+        if (rate.length - rate.indexOf('.') > 2) {
+            document.getElementById(namerate).value = parseFloat(rate).toFixed(2);
+        }
+        document.getElementById(namerate).value = formatCurrency(rate);
+        rate = parseFloat(rate).toFixed(2);
+
+        var amount = qty * rate;
+        document.getElementById(nameamount).value = formatCurrency(amount);
+
+        var sumamount = 0;
+        $('.amountclass').each(function () {
+            sumamount += parseFloat(this.value.replace(',', ''));
+        });
+        var subtotal = sumamount;
+        document.getElementById("subtotal").value = formatCurrency(subtotal);
+        var discountValue = document.getElementById("DiscountValue").value;
+        var discountAmount = discountValue * subtotal / 100;
+        document.getElementById("DiscountAmount").value = formatCurrency(discountAmount);
+        document.getElementById("total").value = formatCurrency(subtotal - discountAmount);
+    }
+
+    function CurrencyChange() {
+        var code = document.getElementById("currency").value;
+        var array = @Html.Raw(Json.Serialize(@Model.Data.ListOfCurrency));
+        var codeCurr = array.find(x => x.code == code).code;
+        $('.currclass').each(function () {
+            this.value = codeCurr;
+        });
+        document.getElementById("curr").value = codeCurr;
+        document.getElementById("totaltext").value = "Total " + "(" + codeCurr + ")";
+    }
+
+    function CustomerChange() {
+        var code = document.getElementById("customer").value;
+        var array = @Html.Raw(Json.Serialize(@Model.Data.ListOfCustomer));
+        document.getElementById("alamatto").value = array.find(x => x.id == code).alamat;
+        document.getElementById("imgheader").src = array.find(x => x.id == code).url;
+    }
+
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+
+    function formatCurrency(amount) {
+        var num = parseFloat(amount); //convert to float
+        //default values
+        decimalSeparator = '.';
+        thousandsSeparator = ',';
+        nDecimalDigits = 2;
+
+        var fixed = num.toFixed(nDecimalDigits); //limit or add decimal digits
+        //}
+        //separate begin [$1], middle [$2] and decimal digits [$4]
+        var parts = new RegExp('^(-?\\d{1,3})((?:\\d{3})+)(\\.(\\d{' + nDecimalDigits + '}))?$').exec(fixed);
+
+        if (parts) { //num >= 1000 || num < = -1000
+            return parts[1] + parts[2].replace(/\d{3}/g, thousandsSeparator + '$&') + (parts[4] ? decimalSeparator + parts[4] : '');
+        } else {
+            return fixed.replace('.', decimalSeparator);
+        }
+    }
+</script>

@@ -23,159 +23,151 @@
 </head>
 <body>
     <div class="container">
-        @* <div class="col-md-12"> *@
-            <div class="row" style="padding: 20px;">
-                <div class="col-lg-5">
-                <h3> <span class="badge badge-success">PAID</span> Bill</h3>
-                <ul class="list-group">
-                    <li class="list-group-item" style="font-size:12px">Please find attached your invoice. Thank your for timely payment.</li>
-                </ul>
+        <div class="row" style="padding: 20px;">
+            <div class="col-lg-5">
+            <h3> <span class="badge badge-success">PAID</span> Bill</h3>
+            <ul class="list-group">
+                <li class="list-group-item" style="font-size:12px">Please find attached your invoice. Thank your for timely payment.</li>
+            </ul>
+            </div>
+            <div class="col-lg"></div>
+            <div class="col-lg-3">
+                <img height="60px" id="imgheader" style="resize:both;" src="@Model.Data.ListOfCustomer[0].LogoURL" />
+            </div>
+        </div>
+        <div class="row" style="padding: 20px;">
+            <div class="col-lg-2">
+            <label>Invoice No.</label>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1">#</span>
                 </div>
-                <div class="col-lg"></div>
+                <input type="text" class="form-control" style="background-color:white;" placeholder="INV-@Model.Number" readonly aria-describedby="basic-addon1">
+            </div>
+            </div>
+            <div class="col-lg"></div>
+            <div class="col-lg-3" style="display:inline-block;margin-right:20px;">
+                <label>Language</label>
+                <select id="language" class="form-control" asp-items="@(new SelectList(Model.Data.ListOfLanguage,"Name","Code"))"></select>
+            </div>
+            <div class="col-lg-3" style="display:inline-block;margin-right:20px;">
+                <label>Currency</label>
+                <select onchange="CurrencyChange()" id="currency" class="form-control" action="" asp-items="@(new SelectList(Model.Data.ListOfCurrency,"Code","Name"))"></select>
+            </div>
+        </div>
+        <hr>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label for="from">From</label>
+                        <textarea class="form-control" id="from" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="col-lg-4"></div>
                 <div class="col-lg-3">
-                    <img height="60px" id="imgheader" style="resize:both;" src="@Model.Data.ListOfCustomer[0].LogoURL" />
+                    <div class="form-group" style="display:inline-block;margin-right:20px;">
+                        <label for="duedate">Date</label>
+                        <input type="text" id="duedate" class="datepicker" data-date-format="yyyy/MM/dd" onchange="DatepickChange()" />
+                        <label for="invoicedue">Invoice Due</label>
+                        <select disabled="disabled" id="invoicedue" class="form-control" asp-items="@(new SelectList(Model.ListOfInvDue,"ID","Desc"))"></select>
+                    </div>
+                    <div class="form-group" style="display:inline-block;margin-right:20px;">
+                        
+                    </div>
                 </div>
             </div>
-            <div class="row" style="padding: 20px;">
-                <div class="col-lg-2">
-                <label>Invoice No.</label>
-                <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text" id="basic-addon1">#</span>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label for="customer">To</label>
+                        <select style="width:50%;" onchange="CustomerChange()" id="customer" class="form-control" asp-items="@(new SelectList(Model.Data.ListOfCustomer,"ID","Name"))"></select>
+                        <textarea class="form-control" value="@Model.Data.ListOfCustomer[0].Address" rows="3" id="alamatto" contenteditable="false" disabled="disabled"></textarea>
                     </div>
-                    <input type="text" class="form-control" style="background-color:white;" placeholder="INV-@Model.Number" readonly aria-describedby="basic-addon1">
                 </div>
+                <div class="col-lg-4"></div>
+                <div class="col-lg-3" style="display:inline-block;margin-right:20px;" >
+                    <label for="PurchaseNo">Purchase Order No</label>
+                    <input type="text" class="form-control" id="PurchaseNo"/>
                 </div>
-                <div class="col-lg"></div>
-                <div class="col-lg-3" style="display:inline-block;margin-right:20px;">
-                    <label>Language</label>
-                    <select id="language" class="form-control" asp-items="@(new SelectList(Model.Data.ListOfLanguage,"Name","Code"))"></select>
+            </div>
+        </div>
+
+        <table class=table id="tabeldetail">
+            <thead>
+                <tr>
+                    <td scope="col-6" style="text-align:left; width:40%;">Name</td>
+                    <td scope="col-2" style="text-align:right; width:20%;">Quantity</td>
+                    <td scope="col-2" style="text-align:right; width:20%;">Rate</td>
+                    <td scope="col-2" style="text-align:right; width:20%;">Amount</td>
+                </tr>
+            </thead>
+            <hr>
+            <tbody>
+                <tr>
+                    <td rowspan="2" style="vertical-align:top;">
+                        <textarea class="tinymce" style="width:100%;" rows="4" cols="4" id="detail"></textarea>
+                    </td>
+                    <td>
+                        <input style="width:100%;text-align:right;" type="text" onkeypress="return isNumberKey(event)" id="qty" value="0.00" onkeyup="QtyRateChange(0)" />
+                    </td>
+                    <td>
+                        <input style="width:100%;text-align:right;" type="text" onkeypress="return isNumberKey(event)" id="rate" value="0.00" onkeyup="QtyRateChange(0)" />
+                        <select style="width:100%;" id="uom" class="form-control" asp-items="@(new SelectList(Model.Data.ListOfUOM,"ID","Code"))"></select>
+                    </td>
+                    <td>
+                        <input style="width:30%;text-align:left;" type="text" disabled="disabled" id="curr" value="USD" /><input style="width:70%;text-align:right;" disabled="disabled" type="text" id="amount" class="amountclass" value="0.00" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <hr>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-6" style="display: block;" >
+                    <input class="btn btn-primary" type="button" id="add" value="New Line" />
                 </div>
-                <div class="col-lg-3" style="display:inline-block;margin-right:20px;">
-                    <label>Currency</label>
-                    <select onchange="CurrencyChange()" id="currency" class="form-control" action="" asp-items="@(new SelectList(Model.Data.ListOfCurrency,"Code","Name"))"></select>
+                <div class="col-6" style="display: block; text-align:right;" >
+                    <input value="SubTotal" style="border:none;" type="text" disabled="disabled" />
+                    <input value="0.00" style="text-align:right;border:none;" type="text" disabled="disabled" id="subtotal" />
                 </div>
             </div>
             <hr>
-            @* <div style="font-size: 40%; font-family: Helvetica; font-weight: 400; margin-top: 5%; margin-bottom: 3%; border-top: outset;">
-            </div> *@
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-4">
-                        <div class="form-group">
-                            <label for="from">From</label>
-                            <textarea class="form-control" id="from" rows="3"></textarea>
-                        </div>
-                    </div>
-                    <div class="col-lg-4"></div>
-                    <div class="col-lg-3">
-                        <div class="form-group" style="display:inline-block;margin-right:20px;">
-                            <label for="duedate">Date</label>
-                            <input type="text" id="duedate" class="datepicker" onchange="DatepickChange()" />
-                             <label for="invoicedue">Invoice Due</label>
-                            <select disabled="disabled" id="invoicedue" asp-items="@(new SelectList(Model.ListOfInvDue,"ID","Desc"))"></select>
-                        </div>
-                        <div class="form-group" style="display:inline-block;margin-right:20px;">
-                           
-                        </div>
-                    </div>
+            <div class="row">
+                <div class="col-6" style="display: block; text-align:right;" >
+                    <input class="btn btn-outline-danger rounded-circle" type="button" id="clear" value="x" onclick="ClearDiscount()" />
                 </div>
-                <div class="row">
-                    <div class="col-lg-4">
-                        <div class="form-group">
-                            <label for="customer">To</label>
-                            <select style="width:50%;" onchange="CustomerChange()" id="customer" class="form-control" asp-items="@(new SelectList(Model.Data.ListOfCustomer,"ID","Name"))"></select>
-                            <textarea class="form-control" value="@Model.Data.ListOfCustomer[0].Address" rows="3" id="alamatto" contenteditable="false" disabled="disabled"></textarea>
+                <div class="col-6" style="display: block; text-align:right;" >
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="validationDefaultUsername" placeholder="Discount" aria-describedby="inputGroupPrepend2" required>
+                        <input value="0" style="width:10%;text-align:right;" type="text" id="DiscountValue" onkeyup="DiscountValueChange()" />
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroupPrepend2">%</span>
                         </div>
-                    </div>
-                    <div class="col-lg-4"></div>
-                    <div class="col-lg-3" style="display:inline-block;margin-right:20px;" >
-                        <label for="PurchaseNo">Purchase Order No</label>
-                        <input type="text" id="PurchaseNo" />
+                        <input value="0.00" style="text-align:right;border:none;" type="text" disabled="disabled" id="DiscountAmount" />                                
+                        </div>
                     </div>
                 </div>
             </div>
-
-            @* <hr> *@
-
-            @* <div style="font-size: 40%; font-family: Helvetica; font-weight: 400; margin-top: 5%; margin-bottom: 3%; border-top: outset;">
-            </div> *@
-
-            <table class=table id="tabeldetail">
-                <thead>
-                    <tr>
-                        <td scope="col-6" style="text-align:left; width:40%;">Name</td>
-                        <td scope="col-2" style="text-align:right; width:20%;">Quantity</td>
-                        <td scope="col-2" style="text-align:right; width:20%;">Rate</td>
-                        <td scope="col-2" style="text-align:right; width:20%;">Amount</td>
-                    </tr>
-                </thead>
-                <hr>
-                <tbody>
-                    <tr>
-                        <td rowspan="2" style="vertical-align:top;">
-                            <textarea class="tinymce" style="width:100%;" rows="4" cols="4" id="detail"></textarea>
-                        </td>
-                        <td>
-                            <input style="width:100%;text-align:right;" type="text" onkeypress="return isNumberKey(event)" id="qty" value="0.00" onkeyup="QtyRateChange(0)" />
-                        </td>
-                        <td>
-                            <input style="width:100%;text-align:right;" type="text" onkeypress="return isNumberKey(event)" id="rate" value="0.00" onkeyup="QtyRateChange(0)" />
-                            <select style="width:100%;" id="uom" class="form-control" asp-items="@(new SelectList(Model.Data.ListOfUOM,"ID","Code"))"></select>
-                        </td>
-                        <td>
-                            <input style="width:30%;text-align:left;" type="text" disabled="disabled" id="curr" value="USD" /><input style="width:70%;text-align:right;" disabled="disabled" type="text" id="amount" class="amountclass" value="0.00" />
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
             <hr>
-
-            <div class="container">
-                <div class="row">
-                    <div class="col-6" style="display: block;" >
-                        <input class="btn btn-primary" type="button" id="add" value="New Line" />
-                    </div>
-                    <div class="col-6" style="display: block; text-align:right;" >
-                        <input value="SubTotal" style="border:none;" type="text" disabled="disabled" />
-                        <input value="0.00" style="text-align:right;border:none;" type="text" disabled="disabled" id="subtotal" />
-                    </div>
+            <div class="row">
+                <div class="col-6" style="display: block;" >
                 </div>
-                <hr>
-                <div class="row">
-                    <div class="col-6" style="display: block; text-align:right;" >
-                       <input class="btn btn-outline-danger rounded-circle" type="button" id="clear" value="x" onclick="ClearDiscount()" />
-                    </div>
-                    <div class="col-6" style="display: block; text-align:right;" >
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="validationDefaultUsername" placeholder="Discount" aria-describedby="inputGroupPrepend2" required>
-                            <input value="0" style="width:10%;text-align:right;" type="text" id="DiscountValue" onkeyup="DiscountValueChange()" />
-                            <div class="input-group-prepend">
-                                <span class="input-group-text" id="inputGroupPrepend2">%</span>
-                            </div>
-                            <input value="0.00" style="text-align:right;border:none;" type="text" disabled="disabled" id="DiscountAmount" />                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <hr>
-                <div class="row">
-                    <div class="col-6" style="display: block;" >
-                    </div>
-                    <div class="col-6" style="display: block; text-align:right;" >
-                        <input value="Total USD" style="border:none;" type="text" disabled="disabled" id="totaltext" />
-                        <input value="0.00" style="text-align:right;border:none;" type="text" disabled="disabled" id="grandtotal" />
-                    </div>
-                </div>
-                <hr>
-                <div class="row">
-                    <div class="col-6" style="display: block;" >
-                    </div>
-                    <div class="col-6" style="display: block; text-align:right;" >
-                        <input class="btn btn-primary" type="button" id="save" value="Submit" />
-                    </div>
+                <div class="col-6" style="display: block; text-align:right;" >
+                    <input value="Total USD" style="border:none;" type="text" disabled="disabled" id="totaltext" />
+                    <input value="0.00" style="text-align:right;border:none;" type="text" disabled="disabled" id="grandtotal" />
                 </div>
             </div>
+            <hr>
+            <div class="row">
+                <div class="col-6" style="display: block;" >
+                </div>
+                <div class="col-6" style="display: block; text-align:right;" >
+                    <input class="btn btn-primary" type="button" id="save" value="Submit" />
+                </div>
+            </div>
+        </div>
     </div>
     <!-- The Modal -->
     <div id="myModal" class="modal">
